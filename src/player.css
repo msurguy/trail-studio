@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at 20% 15%, #1f2848 0%, #0a0c14 48%, #05070d 100%);
+  color: #dbe3f0;
+}
+
+.player-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  padding: 16px;
+}
+
+.player-controls {
+  border: 1px solid #222a42;
+  border-radius: 12px;
+  background: rgba(10, 13, 24, 0.92);
+  backdrop-filter: blur(12px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-controls h1 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.player-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #9aa7bf;
+}
+
+.player-file {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: #9aa7bf;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.player-file input,
+.player-file textarea {
+  border: 1px solid #2f3855;
+  border-radius: 8px;
+  background: #12192d;
+  color: #dbe3f0;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+}
+
+.player-file textarea {
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.4;
+}
+
+.player-file input:focus,
+.player-file textarea:focus {
+  border-color: #6e8cff;
+}
+
+.player-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.player-btn {
+  flex: 1;
+  min-width: 90px;
+  border: 1px solid #374064;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #31406e, #1e2a4f);
+  color: #e8eeff;
+  padding: 10px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.player-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.player-status {
+  border-top: 1px solid #222a42;
+  padding-top: 10px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: #96a3be;
+  min-height: 32px;
+}
+
+.player-stage-wrap {
+  border: 1px solid #222a42;
+  border-radius: 12px;
+  background: #05070d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+#player-canvas {
+  max-width: 100%;
+  max-height: calc(100vh - 40px);
+  height: auto;
+  width: auto;
+  border-radius: 6px;
+  box-shadow: 0 0 38px rgba(110, 140, 255, 0.16);
+}
+
+.player-empty {
+  position: absolute;
+  color: #4f5a7f;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.player-stage-wrap:fullscreen {
+  padding: 18px;
+  background: #000;
+}
+
+.player-stage-wrap:fullscreen #player-canvas {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0;
+}
+
+@media (max-width: 960px) {
+  .player-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .player-controls {
+    order: 2;
+  }
+
+  .player-stage-wrap {
+    min-height: 55vh;
+  }
+}

@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ping-Pong Trail Studio</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">◈</div>
+      <div>
+        <div class="header-title">Ping-Pong Trail Studio</div>
+        <div class="header-sub">ALPHA DECAY TRAIL ANIMATOR</div>
+      </div>
+      <div class="header-spacer"></div>
+      <nav class="top-nav">
+        <button class="top-nav-link" id="nav-howto" type="button">
+          How to Use
+        </button>
+        <button class="top-nav-link" id="nav-open-player" type="button">
+          Lean Player
+        </button>
+      </nav>
+    </header>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Upload -->
+        <div class="panel">
+          <div class="section-title">⬆ Image Upload</div>
+          <label for="file-input" class="drop-zone" id="drop-zone">
+            <div class="drop-icon" id="drop-icon">⊕</div>
+            <div class="drop-text" id="drop-text">Drop or click to upload</div>
+            <div class="drop-hint">PNG · JPG · SVG</div>
+          </label>
+          <input
+            id="file-input"
+            type="file"
+            accept=".png,.jpg,.jpeg,.svg"
+            class="hidden"
+          />
+
+          <div id="jpg-options" class="hidden mt-sm">
+            <div class="field-label">Treat as transparent</div>
+            <select id="transparency-mode">
+              <option value="none">None</option>
+              <option value="black">Black pixels</option>
+              <option value="white">White pixels</option>
+            </select>
+          </div>
+
+          <div id="raster-options" class="hidden mt-sm">
+            <div class="field-label">PNG/JPG Resize Width (px)</div>
+            <div class="row">
+              <input
+                type="number"
+                id="raster-width"
+                value="1600"
+                min="32"
+                max="8192"
+                step="1"
+              />
+            </div>
+            <div class="check-row">
+              <input type="checkbox" id="raster-resize-enabled" />
+              <label for="raster-resize-enabled">Enable High-Quality Resize</label>
+            </div>
+            <div
+              class="info-line info-muted"
+              style="font-size: 10px; margin-top: 4px"
+            >
+              Uses pica resampling before pixel extraction.
+            </div>
+          </div>
+
+          <div id="svg-options" class="hidden mt-sm">
+            <div class="field-label">SVG Content Width (px)</div>
+            <input
+              type="number"
+              id="svg-width"
+              value="1200"
+              min="32"
+              max="8192"
+              step="1"
+            />
+            <div class="field-label mt-sm">SVG Resolution Multiplier</div>
+            <select id="svg-scale-multiplier">
+              <option value="1" selected>1× (Base)</option>
+              <option value="2">2× (Higher)</option>
+              <option value="3">3× (Highest)</option>
+            </select>
+            <div
+              class="info-line info-muted"
+              style="font-size: 10px; margin-top: 4px"
+            >
+              Final raster width = content width × multiplier.
+            </div>
+          </div>
+
+          <div id="bounds-info" class="info-box hidden">
+            <div class="info-line info-dim" style="margin-bottom: 3px">
+              CONTENT BOUNDS
+            </div>
+            <div class="info-line info-dim" id="info-original"></div>
+            <div class="info-line info-accent" id="info-trimmed"></div>
+          </div>
+        </div>
+
+        <!-- Canvas Size -->
+        <div class="panel">
+          <div class="section-title">▦ Canvas Size</div>
+          <select id="canvas-preset">
+            <option value="512,512">512 × 512</option>
+            <option value="800,600" selected>800 × 600</option>
+            <option value="1024,768">1024 × 768</option>
+            <option value="1280,720">1280 × 720 (HD)</option>
+            <option value="1920,1080">1920 × 1080 (FHD)</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div id="custom-size" class="hidden row mt-sm">
+            <div>
+              <div class="field-label">Width</div>
+              <input
+                type="number"
+                id="custom-w"
+                value="800"
+                min="64"
+                max="3840"
+              />
+            </div>
+            <div>
+              <div class="field-label">Height</div>
+              <input
+                type="number"
+                id="custom-h"
+                value="600"
+                min="64"
+                max="2160"
+              />
+            </div>
+          </div>
+          <div class="info-line info-muted mt-sm" id="canvas-size-label">
+            800 × 600 px
+          </div>
+        </div>
+
+        <!-- Trail & Motion -->
+        <div class="panel">
+          <div class="section-title">◎ Trail & Motion</div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Alpha Decay</span>
+              <span class="slider-value" id="val-decay">0.92</span>
+            </div>
+            <input
+              type="range"
+              id="alpha-decay"
+              min="0.5"
+              max="0.99"
+              step="0.01"
+              value="0.92"
+            />
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Trail Offset X</span>
+              <span class="slider-value" id="val-ox">1.5px</span>
+            </div>
+            <input
+              type="range"
+              id="offset-x"
+              min="-8"
+              max="8"
+              step="0.1"
+              value="1.5"
+            />
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Trail Offset Y</span>
+              <span class="slider-value" id="val-oy">0.5px</span>
+            </div>
+            <input
+              type="range"
+              id="offset-y"
+              min="-8"
+              max="8"
+              step="0.1"
+              value="0.5"
+            />
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Animation Speed</span>
+              <span class="slider-value" id="val-speed">1.0×</span>
+            </div>
+            <input
+              type="range"
+              id="anim-speed"
+              min="0.1"
+              max="4"
+              step="0.1"
+              value="1.0"
+            />
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span class="slider-label">Content Scale</span>
+              <span class="slider-value" id="val-scale">1.0×</span>
+            </div>
+            <input
+              type="range"
+              id="content-scale"
+              min="0.1"
+              max="3"
+              step="0.05"
+              value="1.0"
+            />
+          </div>
+
+          <div class="mt-sm">
+            <div class="field-label">Motion Mode</div>
+            <select id="motion-mode">
+              <option value="bounce">Bounce</option>
+              <option value="orbit">Orbit</option>
+              <option value="drift">Drift</option>
+              <option value="figure8">Figure-8</option>
+              <option value="lissajous">Lissajous</option>
+              <option value="spiral">Spiral Pulse</option>
+              <option value="zigzag">Zig-Zag Sweep</option>
+              <option value="static">Static (centered)</option>
+            </select>
+          </div>
+
+          <div class="slider-row mt-sm">
+            <div class="slider-header">
+              <span class="slider-label" id="label-mode-speed">Mode Speed</span>
+              <span class="slider-value" id="val-mode-speed">2.00×</span>
+            </div>
+            <input
+              type="range"
+              id="mode-speed"
+              min="0.1"
+              max="8"
+              step="0.1"
+              value="2.0"
+            />
+          </div>
+
+          <div class="slider-row" id="mode-duration-row">
+            <div class="slider-header">
+              <span class="slider-label">Cycle Duration</span>
+              <span class="slider-value" id="val-mode-duration">8.0s</span>
+            </div>
+            <input
+              type="range"
+              id="mode-duration"
+              min="1"
+              max="30"
+              step="0.5"
+              value="8"
+            />
+          </div>
+
+          <div class="slider-row" id="mode-amp-x-row">
+            <div class="slider-header">
+              <span class="slider-label" id="label-mode-amp-x">Path Radius X</span>
+              <span class="slider-value" id="val-mode-amp-x">90%</span>
+            </div>
+            <input
+              type="range"
+              id="mode-amplitude-x"
+              min="0.1"
+              max="1"
+              step="0.01"
+              value="0.9"
+            />
+          </div>
+
+          <div class="slider-row" id="mode-amp-y-row">
+            <div class="slider-header">
+              <span class="slider-label" id="label-mode-amp-y">Path Radius Y</span>
+              <span class="slider-value" id="val-mode-amp-y">90%</span>
+            </div>
+            <input
+              type="range"
+              id="mode-amplitude-y"
+              min="0.1"
+              max="1"
+              step="0.01"
+              value="0.9"
+            />
+          </div>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="panel">
+          <div class="section-title">◔ Color Palette</div>
+          <div class="field-label">Composition Background</div>
+          <div class="row color-row">
+            <input type="color" id="bg-color" value="#000000" />
+            <input
+              type="text"
+              id="bg-color-hex"
+              value="#000000"
+              spellcheck="false"
+            />
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="bg-transparent" />
+            <label for="bg-transparent">Transparent Background (Alpha)</label>
+          </div>
+          <div class="info-line info-muted" style="font-size: 10px">
+            For Keynote, convert alpha WebM to ProRes 4444 .mov.
+          </div>
+
+          <div class="field-label mt-sm">Palette</div>
+          <select id="palette-select">
+            <option value="0">None (Original)</option>
+            <option value="1">Neon Cyber</option>
+            <option value="2">Sunset Blaze</option>
+            <option value="3">Ocean Deep</option>
+            <option value="4">Vapor Wave</option>
+            <option value="5">Inferno</option>
+            <option value="6">Arctic Aurora</option>
+            <option value="7">Monochrome Fade</option>
+            <option value="custom">Custom Palette</option>
+          </select>
+
+          <div id="palette-controls" class="hidden">
+            <div class="color-swatches mt-sm" id="palette-swatches"></div>
+
+            <div id="custom-palette-controls" class="hidden">
+              <div class="field-label">
+                Custom Colors (hex, comma separated)
+              </div>
+              <input
+                type="text"
+                id="custom-palette-input"
+                value="#ff00ff, #00ffff, #ffb703, #00ff66, #ff006e"
+              />
+              <div class="btn-row mt-sm">
+                <button
+                  class="btn btn-ghost"
+                  type="button"
+                  id="btn-apply-custom-palette"
+                >
+                  Apply Palette
+                </button>
+              </div>
+              <div
+                class="info-line info-muted"
+                style="font-size: 10px; margin-top: 6px"
+              >
+                Example: #ff0066, #00d4ff, #ffd166
+              </div>
+            </div>
+
+            <div class="slider-row">
+              <div class="slider-header">
+                <span class="slider-label">Cycle Speed</span>
+                <span class="slider-value" id="val-cspeed">0.30×</span>
+              </div>
+              <input
+                type="range"
+                id="color-speed"
+                min="0.01"
+                max="2"
+                step="0.01"
+                value="0.30"
+              />
+            </div>
+
+            <div class="slider-row">
+              <div class="slider-header">
+                <span class="slider-label">Color Intensity</span>
+                <span class="slider-value" id="val-cintensity">0.60</span>
+              </div>
+              <input
+                type="range"
+                id="color-intensity"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.60"
+              />
+            </div>
+
+            <div class="slider-row">
+              <div class="slider-header">
+                <span class="slider-label">Cycle Duration</span>
+                <span class="slider-value" id="val-cduration">∞</span>
+              </div>
+              <input
+                type="range"
+                id="color-duration"
+                min="0"
+                max="30"
+                step="0.5"
+                value="0"
+              />
+            </div>
+            <div class="info-line info-muted" style="font-size: 10px">
+              0 = infinite cycle
+            </div>
+          </div>
+        </div>
+
+        <!-- Playback & Record -->
+        <div class="panel">
+          <div class="section-title">▶ Playback & Recording</div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-play" disabled>
+              ▶ Play
+            </button>
+            <button class="btn btn-ghost" id="btn-export" disabled>
+              ⤓ PNG
+            </button>
+          </div>
+
+          <div class="mt-sm">
+            <div class="field-label">Record Duration (seconds)</div>
+            <input
+              type="number"
+              id="record-duration"
+              value="5"
+              min="1"
+              max="120"
+              step="1"
+            />
+          </div>
+
+          <div class="btn-row mt-sm">
+            <button class="btn btn-record" id="btn-record" disabled>
+              ⏺ Record WebM
+            </button>
+          </div>
+
+          <div id="record-progress" class="hidden">
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                id="progress-fill"
+                style="width: 0%"
+              ></div>
+            </div>
+            <div
+              class="info-line info-dim mt-sm"
+              id="record-status"
+              style="text-align: center; font-size: 10px"
+            ></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="section-title">⚙ Settings JSON</div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="btn-export-settings" type="button">
+              Generate
+            </button>
+            <button class="btn btn-ghost" id="btn-copy-settings" type="button">
+              Copy
+            </button>
+          </div>
+
+          <div class="mt-sm">
+            <textarea
+              id="settings-json"
+              class="settings-json"
+              rows="10"
+              spellcheck="false"
+              placeholder="Generated settings JSON appears here"
+            ></textarea>
+          </div>
+
+          <div class="btn-row mt-sm">
+            <button class="btn btn-ghost" id="btn-import-settings" type="button">
+              Apply JSON
+            </button>
+            <button class="btn btn-ghost" id="btn-download-settings" type="button">
+              Download
+            </button>
+          </div>
+
+          <div class="btn-row mt-sm">
+            <label class="btn btn-ghost" for="settings-file-input">Load File</label>
+            <input
+              id="settings-file-input"
+              type="file"
+              accept="application/json,.json"
+              class="hidden"
+            />
+            <button class="btn btn-ghost" id="btn-open-player" type="button">
+              Open Lean Player
+            </button>
+          </div>
+
+          <div class="info-line info-muted mt-sm" style="font-size: 10px">
+            Lean player reads this JSON + image input for fullscreen playback.
+          </div>
+          <div id="settings-status" class="info-line info-dim mt-sm"></div>
+        </div>
+      </div>
+
+      <!-- Canvas Area -->
+      <div class="canvas-wrap">
+        <div class="canvas-frame">
+          <div class="canvas-bar">
+            <div style="display: flex; gap: 6px; align-items: center">
+              <span class="badge" id="badge-size">800×600</span>
+              <span class="badge badge-live hidden" id="badge-live"
+                >● LIVE</span
+              >
+              <span class="badge badge-rec hidden" id="badge-rec">⏺ REC</span>
+            </div>
+            <span class="info-line info-muted">PING-PONG BUFFER</span>
+          </div>
+          <canvas id="display-canvas" width="800" height="600"></canvas>
+        </div>
+
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">◈</div>
+          <div class="empty-title">Upload an image to begin</div>
+          <div class="empty-sub">
+            PNG, JPG, or SVG — content will be auto-trimmed
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-overlay hidden" id="info-overlay" role="dialog" aria-modal="true">
+      <div class="info-panel">
+        <div class="info-panel-head">
+          <div>
+            <div class="header-title">How To Use</div>
+            <div class="header-sub">PING-PONG BUFFER WORKFLOW</div>
+          </div>
+          <button class="top-nav-link" id="btn-close-info" type="button">
+            Close
+          </button>
+        </div>
+
+        <div class="info-guide">
+          <div class="info-guide-item">
+            <strong>1. Upload an image</strong>
+            Drop PNG, JPG, or SVG. The tool auto-trims content bounds.
+          </div>
+          <div class="info-guide-item">
+            <strong>2. Tune motion and trails</strong>
+            Use Trail & Motion, Background, and Palette controls to shape the look.
+          </div>
+          <div class="info-guide-item">
+            <strong>3. Export settings JSON</strong>
+            In the Settings JSON panel, click Generate and Copy or Download.
+          </div>
+          <div class="info-guide-item">
+            <strong>4. Use Lean Player for fullscreen</strong>
+            Open Lean Player, load image + JSON, apply settings, then fullscreen.
+          </div>
+          <div class="info-guide-item">
+            <strong>Shortcuts</strong>
+            <span>Studio: <code>?</code> opens this help, <code>Esc</code> closes it.</span>
+            <span>Player: <code>Space</code> play/pause, <code>F</code> fullscreen.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
