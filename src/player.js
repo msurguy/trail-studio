@@ -18,6 +18,7 @@ import {
   createSettingsPayload,
   parseSettingsPayload,
 } from "./settings";
+import { cleanupFaintTrail } from "./trail-utils";
 
 const pica = picaFactory();
 
@@ -287,6 +288,8 @@ function animate() {
       }
     }
   }
+
+  cleanupFaintTrail(wCtx, w, h, state.time);
 
   const spriteWidth = trimmed.width * settings.contentScale;
   const spriteHeight = trimmed.height * settings.contentScale;

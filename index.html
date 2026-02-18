@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ping-Pong Trail Studio</title>
+    <title>Ping-Pong Trail Studio by Maks Surguy</title>
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
@@ -31,15 +31,21 @@
         <div class="panel">
           <div class="section-title">⬆ Input Source</div>
           <div class="input-tabs">
-            <button class="input-tab active" id="tab-image" type="button">Image</button>
-            <button class="input-tab" id="tab-text" type="button">Text / Emoji</button>
+            <button class="input-tab active" id="tab-image" type="button">
+              Image
+            </button>
+            <button class="input-tab" id="tab-text" type="button">
+              Text / Emoji
+            </button>
           </div>
 
           <!-- Image input -->
           <div id="image-input-section">
             <label for="file-input" class="drop-zone" id="drop-zone">
               <div class="drop-icon" id="drop-icon">⊕</div>
-              <div class="drop-text" id="drop-text">Drop or click to upload</div>
+              <div class="drop-text" id="drop-text">
+                Drop or click to upload
+              </div>
               <div class="drop-hint">PNG · JPG · SVG</div>
             </label>
             <input
@@ -72,7 +78,9 @@
               </div>
               <div class="check-row">
                 <input type="checkbox" id="raster-resize-enabled" />
-                <label for="raster-resize-enabled">Enable High-Quality Resize</label>
+                <label for="raster-resize-enabled"
+                  >Enable High-Quality Resize</label
+                >
               </div>
               <div
                 class="info-line info-muted"
@@ -343,7 +351,9 @@
 
           <div class="slider-row" id="mode-amp-x-row">
             <div class="slider-header">
-              <span class="slider-label" id="label-mode-amp-x">Path Radius X</span>
+              <span class="slider-label" id="label-mode-amp-x"
+                >Path Radius X</span
+              >
               <span class="slider-value" id="val-mode-amp-x">90%</span>
             </div>
             <input
@@ -358,7 +368,9 @@
 
           <div class="slider-row" id="mode-amp-y-row">
             <div class="slider-header">
-              <span class="slider-label" id="label-mode-amp-y">Path Radius Y</span>
+              <span class="slider-label" id="label-mode-amp-y"
+                >Path Radius Y</span
+              >
               <span class="slider-value" id="val-mode-amp-y">90%</span>
             </div>
             <input
@@ -519,14 +531,21 @@
               id="loop-mode-info"
               style="font-size: 10px; margin-top: 2px"
             >
-              Records one seamless loop cycle. Duration auto-set to mode duration.
+              Records one seamless loop cycle. Duration auto-set to mode
+              duration.
             </div>
             <div
               class="info-line"
               id="loop-mode-warning"
-              style="font-size: 10px; margin-top: 2px; color: #f5a623; display: none"
+              style="
+                font-size: 10px;
+                margin-top: 2px;
+                color: #f5a623;
+                display: none;
+              "
             >
-              Loop mode works best with cyclic motion modes (orbit, figure8, lissajous, spiral, zigzag).
+              Loop mode works best with cyclic motion modes (orbit, figure8,
+              lissajous, spiral, zigzag).
             </div>
           </div>
 
@@ -555,7 +574,11 @@
         <div class="panel">
           <div class="section-title">⚙ Settings JSON</div>
           <div class="btn-row">
-            <button class="btn btn-ghost" id="btn-export-settings" type="button">
+            <button
+              class="btn btn-ghost"
+              id="btn-export-settings"
+              type="button"
+            >
               Generate
             </button>
             <button class="btn btn-ghost" id="btn-copy-settings" type="button">
@@ -574,16 +597,26 @@
           </div>
 
           <div class="btn-row mt-sm">
-            <button class="btn btn-ghost" id="btn-import-settings" type="button">
+            <button
+              class="btn btn-ghost"
+              id="btn-import-settings"
+              type="button"
+            >
               Apply JSON
             </button>
-            <button class="btn btn-ghost" id="btn-download-settings" type="button">
+            <button
+              class="btn btn-ghost"
+              id="btn-download-settings"
+              type="button"
+            >
               Download
             </button>
           </div>
 
           <div class="btn-row mt-sm">
-            <label class="btn btn-ghost" for="settings-file-input">Load File</label>
+            <label class="btn btn-ghost" for="settings-file-input"
+              >Load File</label
+            >
             <input
               id="settings-file-input"
               type="file"
@@ -628,7 +661,12 @@
       </div>
     </div>
 
-    <div class="info-overlay hidden" id="info-overlay" role="dialog" aria-modal="true">
+    <div
+      class="info-overlay hidden"
+      id="info-overlay"
+      role="dialog"
+      aria-modal="true"
+    >
       <div class="info-panel">
         <div class="info-panel-head">
           <div>
@@ -643,11 +681,13 @@
         <div class="info-guide">
           <div class="info-guide-item">
             <strong>1. Upload an image or type text</strong>
-            Drop PNG, JPG, or SVG — or switch to Text / Emoji tab and type your content.
+            Drop PNG, JPG, or SVG — or switch to Text / Emoji tab and type your
+            content.
           </div>
           <div class="info-guide-item">
             <strong>2. Tune motion and trails</strong>
-            Use Trail & Motion, Background, and Palette controls to shape the look.
+            Use Trail & Motion, Background, and Palette controls to shape the
+            look.
           </div>
           <div class="info-guide-item">
             <strong>3. Export settings JSON</strong>
@@ -655,12 +695,19 @@
           </div>
           <div class="info-guide-item">
             <strong>4. Use Lean Player for fullscreen</strong>
-            Open Lean Player, load image + JSON, apply settings, then fullscreen.
+            Open Lean Player, load image + JSON, apply settings, then
+            fullscreen.
           </div>
           <div class="info-guide-item">
             <strong>Shortcuts</strong>
-            <span>Studio: <code>?</code> opens this help, <code>Esc</code> closes it.</span>
-            <span>Player: <code>Space</code> play/pause, <code>F</code> fullscreen.</span>
+            <span
+              >Studio: <code>?</code> opens this help, <code>Esc</code> closes
+              it.</span
+            >
+            <span
+              >Player: <code>Space</code> play/pause,
+              <code>F</code> fullscreen.</span
+            >
           </div>
         </div>
       </div>
