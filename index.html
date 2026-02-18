@@ -27,84 +27,156 @@
     <div class="layout">
       <!-- Sidebar -->
       <div class="sidebar">
-        <!-- Upload -->
+        <!-- Input Source -->
         <div class="panel">
-          <div class="section-title">⬆ Image Upload</div>
-          <label for="file-input" class="drop-zone" id="drop-zone">
-            <div class="drop-icon" id="drop-icon">⊕</div>
-            <div class="drop-text" id="drop-text">Drop or click to upload</div>
-            <div class="drop-hint">PNG · JPG · SVG</div>
-          </label>
-          <input
-            id="file-input"
-            type="file"
-            accept=".png,.jpg,.jpeg,.svg"
-            class="hidden"
-          />
-
-          <div id="jpg-options" class="hidden mt-sm">
-            <div class="field-label">Treat as transparent</div>
-            <select id="transparency-mode">
-              <option value="none">None</option>
-              <option value="black">Black pixels</option>
-              <option value="white">White pixels</option>
-            </select>
+          <div class="section-title">⬆ Input Source</div>
+          <div class="input-tabs">
+            <button class="input-tab active" id="tab-image" type="button">Image</button>
+            <button class="input-tab" id="tab-text" type="button">Text / Emoji</button>
           </div>
 
-          <div id="raster-options" class="hidden mt-sm">
-            <div class="field-label">PNG/JPG Resize Width (px)</div>
-            <div class="row">
+          <!-- Image input -->
+          <div id="image-input-section">
+            <label for="file-input" class="drop-zone" id="drop-zone">
+              <div class="drop-icon" id="drop-icon">⊕</div>
+              <div class="drop-text" id="drop-text">Drop or click to upload</div>
+              <div class="drop-hint">PNG · JPG · SVG</div>
+            </label>
+            <input
+              id="file-input"
+              type="file"
+              accept=".png,.jpg,.jpeg,.svg"
+              class="hidden"
+            />
+
+            <div id="jpg-options" class="hidden mt-sm">
+              <div class="field-label">Treat as transparent</div>
+              <select id="transparency-mode">
+                <option value="none">None</option>
+                <option value="black">Black pixels</option>
+                <option value="white">White pixels</option>
+              </select>
+            </div>
+
+            <div id="raster-options" class="hidden mt-sm">
+              <div class="field-label">PNG/JPG Resize Width (px)</div>
+              <div class="row">
+                <input
+                  type="number"
+                  id="raster-width"
+                  value="1600"
+                  min="32"
+                  max="8192"
+                  step="1"
+                />
+              </div>
+              <div class="check-row">
+                <input type="checkbox" id="raster-resize-enabled" />
+                <label for="raster-resize-enabled">Enable High-Quality Resize</label>
+              </div>
+              <div
+                class="info-line info-muted"
+                style="font-size: 10px; margin-top: 4px"
+              >
+                Uses pica resampling before pixel extraction.
+              </div>
+            </div>
+
+            <div id="svg-options" class="hidden mt-sm">
+              <div class="field-label">SVG Content Width (px)</div>
               <input
                 type="number"
-                id="raster-width"
-                value="1600"
+                id="svg-width"
+                value="1200"
                 min="32"
                 max="8192"
                 step="1"
               />
+              <div class="field-label mt-sm">SVG Resolution Multiplier</div>
+              <select id="svg-scale-multiplier">
+                <option value="1" selected>1× (Base)</option>
+                <option value="2">2× (Higher)</option>
+                <option value="3">3× (Highest)</option>
+              </select>
+              <div
+                class="info-line info-muted"
+                style="font-size: 10px; margin-top: 4px"
+              >
+                Final raster width = content width × multiplier.
+              </div>
             </div>
-            <div class="check-row">
-              <input type="checkbox" id="raster-resize-enabled" />
-              <label for="raster-resize-enabled">Enable High-Quality Resize</label>
-            </div>
-            <div
-              class="info-line info-muted"
-              style="font-size: 10px; margin-top: 4px"
-            >
-              Uses pica resampling before pixel extraction.
+
+            <div id="bounds-info" class="info-box hidden">
+              <div class="info-line info-dim" style="margin-bottom: 3px">
+                CONTENT BOUNDS
+              </div>
+              <div class="info-line info-dim" id="info-original"></div>
+              <div class="info-line info-accent" id="info-trimmed"></div>
             </div>
           </div>
 
-          <div id="svg-options" class="hidden mt-sm">
-            <div class="field-label">SVG Content Width (px)</div>
+          <!-- Text / Emoji input -->
+          <div id="text-input-section" class="hidden">
+            <div class="field-label">Text or Emoji</div>
             <input
-              type="number"
-              id="svg-width"
-              value="1200"
-              min="32"
-              max="8192"
-              step="1"
+              type="text"
+              id="text-content"
+              value=""
+              placeholder="Type text or paste emoji..."
+              spellcheck="false"
+              autocomplete="off"
             />
-            <div class="field-label mt-sm">SVG Resolution Multiplier</div>
-            <select id="svg-scale-multiplier">
-              <option value="1" selected>1× (Base)</option>
-              <option value="2">2× (Higher)</option>
-              <option value="3">3× (Highest)</option>
+
+            <div class="slider-row mt-sm">
+              <div class="slider-header">
+                <span class="slider-label">Font Size</span>
+                <span class="slider-value" id="val-font-size">128px</span>
+              </div>
+              <input
+                type="range"
+                id="text-font-size"
+                min="32"
+                max="512"
+                step="4"
+                value="128"
+              />
+            </div>
+
+            <div class="field-label mt-sm">Font</div>
+            <select id="text-font-family">
+              <option value="sans-serif">Sans-Serif</option>
+              <option value="serif">Serif</option>
+              <option value="monospace">Monospace</option>
+              <option value="cursive">Cursive</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="Impact, sans-serif">Impact</option>
+              <option value="'Comic Sans MS', cursive">Comic Sans</option>
+              <option value="system-ui">System UI</option>
             </select>
+
+            <div class="field-label mt-sm">Text Color</div>
+            <div class="row color-row">
+              <input type="color" id="text-color" value="#ffffff" />
+              <input
+                type="text"
+                id="text-color-hex"
+                value="#ffffff"
+                spellcheck="false"
+              />
+            </div>
+
+            <div class="btn-row mt-sm">
+              <button class="btn btn-primary" id="btn-apply-text" type="button">
+                Apply Text
+              </button>
+            </div>
             <div
               class="info-line info-muted"
-              style="font-size: 10px; margin-top: 4px"
+              style="font-size: 10px; margin-top: 6px"
             >
-              Final raster width = content width × multiplier.
+              Renders text to canvas as the animation source.
             </div>
-          </div>
-
-          <div id="bounds-info" class="info-box hidden">
-            <div class="info-line info-dim" style="margin-bottom: 3px">
-              CONTENT BOUNDS
-            </div>
-            <div class="info-line info-dim" id="info-original"></div>
-            <div class="info-line info-accent" id="info-trimmed"></div>
           </div>
         </div>
 
@@ -437,6 +509,27 @@
             />
           </div>
 
+          <div class="mt-sm">
+            <div>
+              <input type="checkbox" id="loop-mode" />
+              <label for="loop-mode">Loop Mode</label>
+            </div>
+            <div
+              class="info-line info-dim"
+              id="loop-mode-info"
+              style="font-size: 10px; margin-top: 2px"
+            >
+              Records one seamless loop cycle. Duration auto-set to mode duration.
+            </div>
+            <div
+              class="info-line"
+              id="loop-mode-warning"
+              style="font-size: 10px; margin-top: 2px; color: #f5a623; display: none"
+            >
+              Loop mode works best with cyclic motion modes (orbit, figure8, lissajous, spiral, zigzag).
+            </div>
+          </div>
+
           <div class="btn-row mt-sm">
             <button class="btn btn-record" id="btn-record" disabled>
               ⏺ Record WebM
@@ -527,9 +620,9 @@
 
         <div class="empty-state" id="empty-state">
           <div class="empty-icon">◈</div>
-          <div class="empty-title">Upload an image to begin</div>
+          <div class="empty-title">Upload an image or type text to begin</div>
           <div class="empty-sub">
-            PNG, JPG, or SVG — content will be auto-trimmed
+            PNG, JPG, SVG — or switch to Text / Emoji mode
           </div>
         </div>
       </div>
@@ -549,8 +642,8 @@
 
         <div class="info-guide">
           <div class="info-guide-item">
-            <strong>1. Upload an image</strong>
-            Drop PNG, JPG, or SVG. The tool auto-trims content bounds.
+            <strong>1. Upload an image or type text</strong>
+            Drop PNG, JPG, or SVG — or switch to Text / Emoji tab and type your content.
           </div>
           <div class="info-guide-item">
             <strong>2. Tune motion and trails</strong>

@@ -14,6 +14,10 @@ export function createInitialState() {
     colorTime: 0,
     recordStartTime: 0,
     customPalette: ["#ff00ff", "#00ffff", "#ffb703", "#00ff66", "#ff006e"],
+    inputMode: "image",
     processRequestId: 0,
+    loopFrameCount: 0,
+    loopTotalFrames: 0,
+    isWarmingUp: false,
   };
 }

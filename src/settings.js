@@ -26,6 +26,18 @@ const ALLOWED_MOTION_MODES = new Set([
 ]);
 
 const ALLOWED_TRANSPARENCY_MODES = new Set(["none", "black", "white"]);
+const ALLOWED_INPUT_MODES = new Set(["image", "text"]);
+const ALLOWED_FONT_FAMILIES = new Set([
+  "sans-serif",
+  "serif",
+  "monospace",
+  "cursive",
+  "Georgia, serif",
+  "'Courier New', monospace",
+  "Impact, sans-serif",
+  "'Comic Sans MS', cursive",
+  "system-ui",
+]);
 
 const MAX_PALETTE_INDEX = PALETTES.length - 1;
 
@@ -56,6 +68,12 @@ export const DEFAULT_SETTINGS = {
   svgWidth: 1200,
   svgScaleMultiplier: 1,
   recordDuration: 5,
+  loopMode: false,
+  inputMode: "image",
+  textContent: "",
+  textFontSize: 128,
+  textFontFamily: "sans-serif",
+  textColor: "#ffffff",
 };
 
 function clampNumber(value, fallback, min, max) {
@@ -153,6 +171,21 @@ export function sanitizeSettings(input = {}) {
     recordDuration: Math.round(
       clampNumber(source.recordDuration, DEFAULT_SETTINGS.recordDuration, 1, 120),
     ),
+    loopMode: Boolean(source.loopMode),
+    inputMode: ALLOWED_INPUT_MODES.has(source.inputMode)
+      ? source.inputMode
+      : DEFAULT_SETTINGS.inputMode,
+    textContent: typeof source.textContent === "string"
+      ? source.textContent.slice(0, 200)
+      : DEFAULT_SETTINGS.textContent,
+    textFontSize: Math.round(
+      clampNumber(source.textFontSize, DEFAULT_SETTINGS.textFontSize, 32, 512),
+    ),
+    textFontFamily: ALLOWED_FONT_FAMILIES.has(source.textFontFamily)
+      ? source.textFontFamily
+      : DEFAULT_SETTINGS.textFontFamily,
+    textColor:
+      normalizeHexColor(source.textColor) || DEFAULT_SETTINGS.textColor,
   };
 }
 

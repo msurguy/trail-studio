@@ -198,6 +198,57 @@ function reprocessImage() {
   runProcessImage(rawImage, rawFileName);
 }
 
+function processTextFromSettings() {
+  const text = settings.textContent;
+  if (!text) return;
+
+  const fontSize = settings.textFontSize || 128;
+  const fontFamily = settings.textFontFamily || "sans-serif";
+  const textColor = settings.textColor || "#ffffff";
+
+  const measure = document.createElement("canvas");
+  const mCtx = measure.getContext("2d");
+  mCtx.font = `${fontSize}px ${fontFamily}`;
+  const metrics = mCtx.measureText(text);
+
+  const textWidth = Math.ceil(metrics.width);
+  const ascent = Math.ceil(metrics.actualBoundingBoxAscent || fontSize * 0.85);
+  const descent = Math.ceil(metrics.actualBoundingBoxDescent || fontSize * 0.2);
+  const textHeight = ascent + descent;
+
+  const pad = Math.ceil(fontSize * 0.1);
+  const canvasW = textWidth + pad * 2;
+  const canvasH = textHeight + pad * 2;
+
+  if (canvasW < 1 || canvasH < 1) return;
+
+  const textCanvas = document.createElement("canvas");
+  textCanvas.width = canvasW;
+  textCanvas.height = canvasH;
+  const tCtx = textCanvas.getContext("2d");
+
+  tCtx.clearRect(0, 0, canvasW, canvasH);
+  tCtx.font = `${fontSize}px ${fontFamily}`;
+  tCtx.fillStyle = textColor;
+  tCtx.textBaseline = "top";
+  tCtx.fillText(text, pad, pad);
+
+  state.trimmedCanvas = textCanvas;
+  state.hasImage = true;
+  state.inputMode = "text";
+
+  $("player-empty").style.display = "none";
+  $("player-btn-play").disabled = false;
+
+  initBuffers();
+  const { w, h } = getCanvasSize();
+  state.posX = (w - textCanvas.width) / 2;
+  state.posY = (h - textCanvas.height) / 2;
+  renderStaticPreview();
+
+  setStatus(`Text ready: "${text}" (${textCanvas.width}×${textCanvas.height})`);
+}
+
 function animate() {
   const trimmed = state.trimmedCanvas;
   if (!trimmed) return;
@@ -251,6 +302,7 @@ function animate() {
     speed: settings.animSpeed,
     modeSpeed: settings.modeSpeed,
     modeDuration: settings.modeDuration,
+    loopMode: settings.loopMode || false,
   });
 
   wCtx.globalAlpha = 1;
@@ -316,14 +368,21 @@ function applyParsedSettings(payload, source = "manual") {
     console.warn("Failed to cache settings:", error);
   }
 
-  if (state.hasImage) {
+  if (settings.inputMode === "text" && settings.textContent) {
+    processTextFromSettings();
+    setStatus(`Settings applied (${source}) — text mode.`);
+  } else if (state.hasImage) {
     reprocessImage();
+    setStatus(`Settings applied (${source}).`);
+  } else if (settings.inputMode === "text") {
+    initBuffers();
+    paintBackground(ctx, canvas.width, canvas.height);
+    setStatus("Settings applied but text content is empty. Re-export from studio with text entered.", true);
   } else {
     initBuffers();
     paintBackground(ctx, canvas.width, canvas.height);
+    setStatus(`Settings applied (${source}). Load an image or use text mode to start.`);
   }
-
-  setStatus(`Settings applied (${source}).`);
 }
 
 function applySettingsFromText() {

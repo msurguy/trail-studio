@@ -610,3 +610,40 @@
     border-radius: 2px;
     transition: width 0.3s;
   }
+
+  .input-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 12px;
+    border: 1px solid #2a2f45;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .input-tab {
+    flex: 1;
+    padding: 7px 10px;
+    border: none;
+    background: rgba(255, 255, 255, 0.03);
+    color: #555b72;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .input-tab:not(:last-child) {
+    border-right: 1px solid #2a2f45;
+  }
+
+  .input-tab:hover {
+    background: rgba(99, 102, 241, 0.06);
+    color: #a0a8b8;
+  }
+
+  .input-tab.active {
+    background: rgba(99, 102, 241, 0.12);
+    color: #818cf8;
+  }

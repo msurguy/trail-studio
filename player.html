@@ -11,7 +11,7 @@
       <aside class="player-controls">
         <h1>Ping-Pong Lean Player</h1>
         <p class="player-sub">
-          Load image + settings JSON from the studio, then play fullscreen.
+          Load settings JSON from the studio (image or text mode), then play fullscreen.
         </p>
 
         <label class="player-file" for="player-image-input">
@@ -54,13 +54,13 @@
           </button>
         </div>
 
-        <div id="player-status" class="player-status">Waiting for image input.</div>
+        <div id="player-status" class="player-status">Waiting for input. Load settings or an image.</div>
       </aside>
 
       <main class="player-stage-wrap" id="player-stage-wrap">
         <canvas id="player-canvas" width="800" height="600"></canvas>
         <div id="player-empty" class="player-empty">
-          Upload an image to start playback
+          Load settings or upload an image to start
         </div>
       </main>
     </div>

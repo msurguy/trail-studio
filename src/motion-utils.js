@@ -12,6 +12,7 @@ export function updateMotionPosition(state, params) {
     speed,
     modeSpeed,
     modeDuration,
+    loopMode = false,
   } = params;
 
   const cx = width / 2 - spriteWidth / 2;
@@ -27,8 +28,13 @@ export function updateMotionPosition(state, params) {
 
   const isCyclicMode = CYCLIC_MOTION_MODES.has(mode);
   const cycleSeconds = Math.max(0.25, modeDuration);
+  // In loop mode, snap speed*modeSpeed to nearest integer so motion completes
+  // full periods at the cycle boundary (ensures seamless loop)
+  const effectiveSpeedProduct = loopMode
+    ? Math.max(1, Math.round(speed * modeSpeed))
+    : speed * modeSpeed;
   const cycleT =
-    (state.time / (cycleSeconds * 60)) * Math.PI * 2 * speed * modeSpeed;
+    (state.time / (cycleSeconds * 60)) * Math.PI * 2 * effectiveSpeedProduct;
   const freeT = state.time * 0.02 * speed * modeSpeed;
   const t = isCyclicMode ? cycleT : freeT;
 
@@ -73,18 +79,22 @@ export function updateMotionPosition(state, params) {
   }
 
   if (mode === "lissajous") {
-    state.posX = cx + Math.sin(t * 1.7 + Math.PI / 2) * maxRx * 0.95;
-    state.posY = cy + Math.sin(t * 2.3) * maxRy * 0.95;
+    const lx = loopMode ? 2 : 1.7;
+    const ly = loopMode ? 3 : 2.3;
+    state.posX = cx + Math.sin(t * lx + Math.PI / 2) * maxRx * 0.95;
+    state.posY = cy + Math.sin(t * ly) * maxRy * 0.95;
     return;
   }
 
   if (mode === "spiral") {
-    const spiralPhase = t * 0.55;
+    const spiralMul = loopMode ? 1.0 : 0.55;
+    const orbitMul = loopMode ? 1.0 : 1.2;
+    const spiralPhase = t * spiralMul;
     const radiusBlend = 0.15 + 0.85 * ((Math.sin(spiralPhase) + 1) / 2);
     const rx = maxRx * radiusBlend;
     const ry = maxRy * radiusBlend;
-    state.posX = cx + Math.cos(t * 1.2) * rx;
-    state.posY = cy + Math.sin(t * 1.2) * ry;
+    state.posX = cx + Math.cos(t * orbitMul) * rx;
+    state.posY = cy + Math.sin(t * orbitMul) * ry;
     return;
   }
 
@@ -92,7 +102,8 @@ export function updateMotionPosition(state, params) {
     const zigNorm = ((t / (Math.PI * 2)) % 1 + 1) % 1;
     const zigTri = zigNorm < 0.5 ? zigNorm * 2 : (1 - zigNorm) * 2;
     state.posX = minX + (maxX - minX) * zigTri;
-    state.posY = cy + Math.sin(t * 1.4) * maxRy * 0.65;
+    const zigYMul = loopMode ? 1.0 : 1.4;
+    state.posY = cy + Math.sin(t * zigYMul) * maxRy * 0.65;
     return;
   }
 

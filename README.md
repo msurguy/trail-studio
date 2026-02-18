@@ -160,14 +160,6 @@ ffmpeg -i "pingpong-animation.webm" \
 └── vite.config.js       # Multi-page Vite config
 ```
 
-## Publishing Notes (GitHub)
-
-Before making the repository public, recommended:
-- Add a `LICENSE` file (MIT or your preferred license)
-- Add screenshots/GIFs to this README for quick visual context
-- Add repository topics (`motion-graphics`, `canvas`, `vite`, `webm`, etc.)
-- Create a short release note describing Studio + Lean Player workflow
-
 ## Troubleshooting
 
 - If fullscreen does not open, check browser permissions for fullscreen APIs.

@@ -208,6 +208,7 @@ async function processImage(img, fileName) {
 
   state.trimmedCanvas = trimmed;
   state.hasImage = true;
+  state.inputMode = "image";
   state.isPlaying = false;
 
   $("drop-icon").textContent = "✓";
@@ -237,6 +238,80 @@ function runProcessImage(img, fileName) {
 function reprocessImage() {
   if (!rawImage) return;
   runProcessImage(rawImage, rawFileName);
+}
+
+function processText() {
+  const text = $("text-content").value.trim();
+  if (!text) return;
+
+  const fontSize = parseInt($("text-font-size").value, 10) || 128;
+  const fontFamily = $("text-font-family").value || "sans-serif";
+  const textColor = $("text-color").value || "#ffffff";
+
+  const measure = document.createElement("canvas");
+  const mCtx = measure.getContext("2d");
+  mCtx.font = `${fontSize}px ${fontFamily}`;
+  const metrics = mCtx.measureText(text);
+
+  const textWidth = Math.ceil(metrics.width);
+  const ascent = Math.ceil(metrics.actualBoundingBoxAscent || fontSize * 0.85);
+  const descent = Math.ceil(metrics.actualBoundingBoxDescent || fontSize * 0.2);
+  const textHeight = ascent + descent;
+
+  const pad = Math.ceil(fontSize * 0.1);
+  const canvasW = textWidth + pad * 2;
+  const canvasH = textHeight + pad * 2;
+
+  if (canvasW < 1 || canvasH < 1) return;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+  const ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  ctx.font = `${fontSize}px ${fontFamily}`;
+  ctx.fillStyle = textColor;
+  ctx.textBaseline = "top";
+  ctx.fillText(text, pad, pad);
+
+  state.trimmedCanvas = canvas;
+  state.hasImage = true;
+  state.inputMode = "text";
+  state.isPlaying = false;
+
+  $("btn-play").disabled = false;
+  $("btn-export").disabled = false;
+  $("btn-record").disabled = false;
+  $("empty-state").classList.add("hidden");
+
+  stopAnimation();
+  initBuffers();
+
+  const { w, h } = getCanvasSize();
+  state.posX = (w - canvas.width) / 2;
+  state.posY = (h - canvas.height) / 2;
+  renderStaticPreview();
+}
+
+function switchInputTab(mode) {
+  state.inputMode = mode;
+  $("tab-image").classList.toggle("active", mode === "image");
+  $("tab-text").classList.toggle("active", mode === "text");
+  $("image-input-section").classList.toggle("hidden", mode !== "image");
+  $("text-input-section").classList.toggle("hidden", mode !== "text");
+}
+
+function syncTextColorInputs(fromHex = false) {
+  if (fromHex) {
+    const normalized = normalizeHexColor($("text-color-hex").value) || "#ffffff";
+    $("text-color").value = normalized;
+    $("text-color-hex").value = normalized;
+  } else {
+    const normalized = normalizeHexColor($("text-color").value) || "#ffffff";
+    $("text-color").value = normalized;
+    $("text-color-hex").value = normalized;
+  }
 }
 
 function initBuffers() {
@@ -393,6 +468,12 @@ function readCurrentSettings() {
     svgWidth: parseInt($("svg-width").value, 10),
     svgScaleMultiplier: parseFloat($("svg-scale-multiplier").value),
     recordDuration: parseInt($("record-duration").value, 10),
+    loopMode: $("loop-mode").checked,
+    inputMode: state.inputMode,
+    textContent: $("text-content").value,
+    textFontSize: parseInt($("text-font-size").value, 10),
+    textFontFamily: $("text-font-family").value,
+    textColor: $("text-color").value,
   };
 }
 
@@ -442,6 +523,13 @@ function applySettingsPayload(payload, options = {}) {
   $("svg-width").value = String(settings.svgWidth);
   $("svg-scale-multiplier").value = String(settings.svgScaleMultiplier);
   $("record-duration").value = String(settings.recordDuration);
+  $("loop-mode").checked = settings.loopMode;
+
+  $("text-content").value = settings.textContent || "";
+  $("text-font-size").value = String(settings.textFontSize || 128);
+  $("text-font-family").value = settings.textFontFamily || "sans-serif";
+  $("text-color").value = settings.textColor || "#ffffff";
+  $("text-color-hex").value = settings.textColor || "#ffffff";
 
   state.customPalette = [...settings.customPalette];
   $("custom-palette-input").value = state.customPalette.join(", ");
@@ -449,12 +537,18 @@ function applySettingsPayload(payload, options = {}) {
   $("custom-size").classList.toggle("hidden", settings.canvasPreset !== "custom");
   $("raster-width").disabled = !settings.rasterResizeEnabled;
 
+  const importedMode = settings.inputMode || "image";
+  switchInputTab(importedMode);
+
   refreshControlReadouts();
   updateMotionModeUI();
+  updateLoopModeUI();
   refreshPaletteUI();
   applyBackgroundModeUI();
 
-  if (rawImage && reprocess) {
+  if (importedMode === "text" && settings.textContent && reprocess) {
+    processText();
+  } else if (rawImage && reprocess) {
     reprocessImage();
   } else if (!state.isPlaying) {
     initBuffers();
@@ -551,6 +645,8 @@ function animate() {
   const spriteWidth = trimmed.width * scale;
   const spriteHeight = trimmed.height * scale;
 
+  const loopMode = $("loop-mode").checked;
+
   updateMotionPosition(state, {
     mode,
     width: w,
@@ -562,6 +658,7 @@ function animate() {
     speed,
     modeSpeed,
     modeDuration,
+    loopMode,
   });
 
   wCtx.globalAlpha = 1.0;
@@ -575,17 +672,47 @@ function animate() {
   state.time += 1;
   state.colorTime += 1;
 
-  if (state.isRecording) {
-    const durationMs = parseFloat($("record-duration").value) * 1000;
-    const elapsed = performance.now() - state.recordStartTime;
-    const progress = Math.min(100, (elapsed / durationMs) * 100);
+  if (state.isWarmingUp) {
+    state.loopFrameCount += 1;
+    const progress = Math.min(100, (state.loopFrameCount / state.loopTotalFrames) * 100);
     $("progress-fill").style.width = `${progress}%`;
     $("record-status").textContent =
-      `Recording... ${(elapsed / 1000).toFixed(1)}s / ${(durationMs / 1000).toFixed(1)}s`;
+      `Warming up... ${Math.round(progress)}%`;
 
-    if (elapsed >= durationMs) {
-      stopRecording();
-      return;
+    if (state.loopFrameCount >= state.loopTotalFrames) {
+      state.isWarmingUp = false;
+      state.loopTotalFrames = state._loopRecordFrames;
+      state.loopFrameCount = 0;
+      beginMediaRecording();
+    }
+  }
+
+  if (state.isRecording) {
+    if (loopMode) {
+      state.loopFrameCount += 1;
+      const progress = Math.min(100, (state.loopFrameCount / state.loopTotalFrames) * 100);
+      $("progress-fill").style.width = `${progress}%`;
+      const elapsed = (state.loopFrameCount / 60).toFixed(1);
+      const total = (state.loopTotalFrames / 60).toFixed(1);
+      $("record-status").textContent =
+        `Recording loop... ${elapsed}s / ${total}s`;
+
+      if (state.loopFrameCount >= state.loopTotalFrames) {
+        stopRecording();
+        return;
+      }
+    } else {
+      const durationMs = parseFloat($("record-duration").value) * 1000;
+      const elapsed = performance.now() - state.recordStartTime;
+      const progress = Math.min(100, (elapsed / durationMs) * 100);
+      $("progress-fill").style.width = `${progress}%`;
+      $("record-status").textContent =
+        `Recording... ${(elapsed / 1000).toFixed(1)}s / ${(durationMs / 1000).toFixed(1)}s`;
+
+      if (elapsed >= durationMs) {
+        stopRecording();
+        return;
+      }
     }
   }
 
@@ -633,10 +760,7 @@ function stopAnimation() {
   $("btn-play").classList.add("btn-primary");
 }
 
-function startRecording() {
-  if (!state.hasImage) return;
-  if (!state.isPlaying) startAnimation();
-
+function beginMediaRecording() {
   const stream = displayCanvas.captureStream(60);
   const supportsVp9 = MediaRecorder.isTypeSupported("video/webm;codecs=vp9");
   const supportsVp8 = MediaRecorder.isTypeSupported("video/webm;codecs=vp8");
@@ -675,14 +799,50 @@ function startRecording() {
 
   mediaRecorder.start(100);
   state.isRecording = true;
+  state.loopFrameCount = 0;
   state.recordStartTime = performance.now();
 
   displayCanvas.classList.add("recording");
   $("badge-rec").classList.remove("hidden");
-  $("record-progress").classList.remove("hidden");
   $("btn-record").textContent = "⏹ Stop Rec";
   $("btn-record").classList.remove("btn-record");
   $("btn-record").classList.add("btn-stop");
+}
+
+function startRecording() {
+  if (!state.hasImage) return;
+
+  const loopMode = $("loop-mode").checked;
+
+  // Loop mode needs a clean restart so time starts at 0
+  if (loopMode) {
+    if (state.isPlaying) stopAnimation();
+    startAnimation();
+  } else if (!state.isPlaying) {
+    startAnimation();
+  }
+
+  $("record-progress").classList.remove("hidden");
+
+  if (loopMode) {
+    const decay = parseFloat($("alpha-decay").value);
+    const modeDuration = parseFloat($("mode-duration").value);
+    const loopFrames = Math.round(modeDuration * 60);
+
+    // Calculate warm-up frames: enough for trail to decay below 0.1% visibility
+    // decay^N < 0.001 => N > log(0.001) / log(decay), capped at 5 cycles
+    const decayFrames = Math.ceil(Math.log(0.001) / Math.log(Math.max(0.5, decay)));
+    const maxWarmupFrames = loopFrames * 5;
+    const warmupFrames = Math.min(decayFrames, maxWarmupFrames);
+
+    state.loopTotalFrames = warmupFrames;
+    state.loopFrameCount = 0;
+    state.isWarmingUp = true;
+    // Store the recording frame count for after warm-up
+    state._loopRecordFrames = loopFrames;
+  } else {
+    beginMediaRecording();
+  }
 }
 
 function stopRecording() {
@@ -691,11 +851,15 @@ function stopRecording() {
   }
 
   state.isRecording = false;
+  state.isWarmingUp = false;
+  state.loopFrameCount = 0;
+  state.loopTotalFrames = 0;
 
   displayCanvas.classList.remove("recording");
   $("badge-rec").classList.add("hidden");
   $("record-progress").classList.add("hidden");
   $("progress-fill").style.width = "0%";
+  $("record-status").textContent = "";
   $("btn-record").textContent = "⏺ Record WebM";
   $("btn-record").classList.remove("btn-stop");
   $("btn-record").classList.add("btn-record");
@@ -723,6 +887,28 @@ dropZone.addEventListener("drop", (event) => {
   const file = event.dataTransfer.files?.[0];
   if (file) loadFile(file, runProcessImage);
 });
+
+$("tab-image").addEventListener("click", () => switchInputTab("image"));
+$("tab-text").addEventListener("click", () => switchInputTab("text"));
+
+$("btn-apply-text").addEventListener("click", () => processText());
+$("text-content").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    processText();
+  }
+});
+
+const fontSizeEl = $("text-font-size");
+const fontSizeDisplay = $("val-font-size");
+function updateFontSizeDisplay() {
+  fontSizeDisplay.textContent = `${fontSizeEl.value}px`;
+}
+fontSizeEl.addEventListener("input", updateFontSizeDisplay);
+updateFontSizeDisplay();
+
+$("text-color").addEventListener("input", () => syncTextColorInputs(false));
+$("text-color-hex").addEventListener("change", () => syncTextColorInputs(true));
 
 $("transparency-mode").addEventListener("change", () => reprocessImage());
 
@@ -808,8 +994,24 @@ ampXEl.addEventListener("input", updateAmpDisplay);
 ampYEl.addEventListener("input", updateAmpDisplay);
 updateAmpDisplay();
 
-$("motion-mode").addEventListener("change", updateMotionModeUI);
+$("motion-mode").addEventListener("change", () => {
+  updateMotionModeUI();
+  updateLoopModeUI();
+});
 updateMotionModeUI();
+
+function updateLoopModeUI() {
+  const loopOn = $("loop-mode").checked;
+  const mode = $("motion-mode").value;
+  const isCyclic = CYCLIC_MOTION_MODES.has(mode);
+
+  $("record-duration").disabled = loopOn;
+  $("loop-mode-warning").style.display =
+    loopOn && !isCyclic ? "block" : "none";
+}
+
+$("loop-mode").addEventListener("change", updateLoopModeUI);
+updateLoopModeUI();
 
 $("palette-select").addEventListener("change", refreshPaletteUI);
 
