@@ -35,10 +35,36 @@ body {
   gap: 12px;
 }
 
+.player-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .player-controls h1 {
   margin: 0;
   font-size: 20px;
   letter-spacing: -0.02em;
+}
+
+.player-source-link {
+  color: #9aa7bf;
+  border: 1px solid #2f3855;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 5px 7px;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.player-source-link:hover {
+  color: #dbe3f0;
+  border-color: #6e8cff;
 }
 
 .player-sub {

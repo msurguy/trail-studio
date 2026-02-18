@@ -2,6 +2,14 @@
   "name": "@msurguy/pingpong-trail-studio",
   "private": true,
   "version": "1.0.0",
+  "homepage": "https://github.com/msurguy/trail-studio",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/msurguy/trail-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/msurguy/trail-studio/issues"
+  },
   "type": "module",
   "dependencies": {
     "pica": "^9.0.1"

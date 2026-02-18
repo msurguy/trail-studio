@@ -84,12 +84,20 @@
     letter-spacing: 0.06em;
     cursor: pointer;
     transition: border-color 0.2s, color 0.2s, background 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
   }
 
   .top-nav-link:hover {
     border-color: #6366f1;
     color: #e0e4ec;
     background: rgba(99, 102, 241, 0.08);
+  }
+
+  .top-nav-source {
+    padding: 6px 8px;
+    font-size: 10px;
   }
 
   @media (max-width: 860px) {
